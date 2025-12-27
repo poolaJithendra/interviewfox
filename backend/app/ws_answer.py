@@ -1,7 +1,8 @@
 from fastapi import WebSocket
+
 from app.prompts import INTERVIEW_ANSWER_PROMPT
-from app.llm_client import generate_answer
 from app.rag import chunk_text, build_index, retrieve_context
+from app.llm_client import stream_answer
 
 
 async def websocket_answer_handler(websocket: WebSocket):
@@ -10,33 +11,34 @@ async def websocket_answer_handler(websocket: WebSocket):
     try:
         data = await websocket.receive_json()
 
-        question = data.get("question", "")
-        resume = data.get("resume", "")
-        job_description = data.get("job_description", "")
+        question = (data.get("question") or "").strip()
+        resume = data.get("resume") or ""
+        job_description = data.get("job_description") or ""
+
+        if not question:
+            await websocket.send_json({"type": "error", "message": "Question is required."})
+            return
 
         combined_text = resume + "\n" + job_description
         chunks = chunk_text(combined_text)
         index, stored_chunks = build_index(chunks)
-
         context = retrieve_context(question, index, stored_chunks)
 
-        prompt = INTERVIEW_ANSWER_PROMPT.format(
-            question=question,
-            context=context
-        )
+        prompt = INTERVIEW_ANSWER_PROMPT.format(question=question, context=context)
 
-        # For now: full answer (streaming token-by-token comes next)
-        answer = generate_answer(prompt)
+        # Notify client stream is starting
+        await websocket.send_json({"type": "start", "context_used": context})
 
-        await websocket.send_json({
-            "type": "answer",
-            "content": answer
-        })
+        # Stream chunks
+        full = []
+        for chunk in stream_answer(prompt):
+            full.append(chunk)
+            await websocket.send_json({"type": "delta", "content": chunk})
+
+        # Final message
+        await websocket.send_json({"type": "done", "content": "".join(full)})
 
     except Exception as e:
-        await websocket.send_json({
-            "type": "error",
-            "message": str(e)
-        })
+        await websocket.send_json({"type": "error", "message": str(e)})
     finally:
         await websocket.close()
