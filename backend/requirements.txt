@@ -5,3 +5,6 @@ websockets
 openai
 faiss-cpu
 numpy
+python-multipart
+pypdf
+python-docx
