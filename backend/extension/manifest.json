@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "InterviewFox",
+  "version": "0.1.0",
+  "description": "Real-time AI interview assistant",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "activeTab"]
+}
