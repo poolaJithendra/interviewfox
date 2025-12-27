@@ -10,19 +10,19 @@ const answerDiv = document.getElementById("answer");
 const icBtn = document.getElementById("icBtn");
 
 /* -------------------------
-   Session + Upload
+   Session Creation & Upload
 -------------------------- */
 async function createSessionAndUpload() {
   sessionInfo.innerText = "Creating session...";
-  answerDiv.innerText = "";
   capturedQ.innerText = "";
+  answerDiv.innerText = "";
 
   // Create session
   const res = await fetch(`${API_BASE}/session/create`, { method: "POST" });
   const data = await res.json();
   sessionId = data.session_id;
 
-  // Upload resume & JD
+  // Prepare uploads
   const resumeFile = document.getElementById("resumeFile").files[0];
   const jdFile = document.getElementById("jdFile").files[0];
 
@@ -31,11 +31,11 @@ async function createSessionAndUpload() {
   if (resumeFile) form.append("resume_file", resumeFile);
   if (jdFile) form.append("jd_file", jdFile);
 
+  // Upload docs
   const uploadRes = await fetch(`${API_BASE}/session/upload`, {
     method: "POST",
     body: form,
   });
-
   const uploadData = await uploadRes.json();
 
   sessionInfo.innerText =
@@ -44,7 +44,7 @@ async function createSessionAndUpload() {
 }
 
 /* -------------------------
-   IC MODE
+   IC MODE HANDLERS
 -------------------------- */
 async function icStart() {
   await fetch(`${API_BASE}/session/ic/start?session_id=${sessionId}`, {
@@ -79,9 +79,8 @@ async function icStopAndAnswer() {
   socket.onopen = () => {
     socket.send(
       JSON.stringify({
+        session_id: sessionId,
         question: question,
-        resume: "",           // handled via session on backend (next refinement)
-        job_description: ""
       })
     );
   };
@@ -100,6 +99,11 @@ async function icStopAndAnswer() {
       return;
     }
 
+    if (msg.type === "done") {
+      // final answer already rendered
+      return;
+    }
+
     if (msg.type === "error") {
       answerDiv.innerText = "Error: " + msg.message;
     }
@@ -111,7 +115,7 @@ async function icStopAndAnswer() {
 }
 
 /* -------------------------
-   Button Handlers
+   Button Event Bindings
 -------------------------- */
 document
   .getElementById("createSessionBtn")
