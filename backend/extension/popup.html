@@ -5,26 +5,44 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        width: 300px;
+        width: 320px;
         padding: 10px;
       }
-      textarea {
-        width: 100%;
-        height: 60px;
-        margin-bottom: 8px;
+      h3 {
+        margin-top: 0;
       }
       button {
         width: 100%;
         padding: 8px;
+        margin-top: 6px;
         background: #ff6a00;
-        color: white;
+        color: #fff;
         border: none;
         cursor: pointer;
+        font-weight: bold;
       }
+      button.secondary {
+        background: #444;
+      }
+      input[type="file"] {
+        width: 100%;
+        margin-top: 4px;
+      }
+      #sessionInfo {
+        font-size: 12px;
+        margin-top: 6px;
+      }
+      #capturedQ,
       #answer {
-        margin-top: 10px;
-        font-size: 14px;
+        font-size: 13px;
         white-space: pre-wrap;
+        margin-top: 6px;
+        border: 1px solid #ddd;
+        padding: 6px;
+        min-height: 40px;
+      }
+      hr {
+        margin: 10px 0;
       }
     </style>
   </head>
@@ -32,12 +50,27 @@
   <body>
     <h3>InterviewFox 🦊</h3>
 
-    <textarea id="question" placeholder="Paste interview question..."></textarea>
-    <textarea id="resume" placeholder="Paste resume (short)"></textarea>
-    <textarea id="jd" placeholder="Paste job description (short)"></textarea>
+    <!-- Resume Upload -->
+    <label><b>Resume (PDF / DOCX)</b></label>
+    <input id="resumeFile" type="file" accept=".pdf,.docx" />
 
-    <button id="askBtn">Get Answer</button>
+    <!-- JD Upload -->
+    <label><b>Job Description (PDF / DOCX / TXT)</b></label>
+    <input id="jdFile" type="file" accept=".pdf,.docx,.txt" />
 
+    <button id="createSessionBtn">Create Session & Upload</button>
+
+    <div id="sessionInfo"></div>
+
+    <hr />
+
+    <!-- IC Mode -->
+    <button id="icBtn" class="secondary">IC OFF (Muted)</button>
+
+    <b>Captured Question</b>
+    <div id="capturedQ"></div>
+
+    <b>Live Answer</b>
     <div id="answer"></div>
 
     <script src="popup.js"></script>
