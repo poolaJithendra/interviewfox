@@ -9,7 +9,7 @@ Interview Question:
 
 Instructions:
 - Answer clearly and confidently
-- Keep the answer between 30–60 seconds
+- Keep the answer between 20–40 seconds
 - Use structured thinking (STAR where applicable)
 - Be concise and natural
 - If technical, explain step-by-step briefly
