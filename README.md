@@ -1,9 +1,3 @@
-Perfect. Below is a **clean, professional, copy-paste-ready `README.md`** for **InterviewFox** that matches your current architecture and GitHub-only state.
-
-You can **replace your README بالكامل** with this.
-
----
-
 # 🦊 InterviewFox
 
 **InterviewFox** is a real-time AI interview copilot that helps candidates answer interview questions using their **resume**, **job description**, and **live interviewer questions**.
