@@ -1,56 +1,244 @@
-from fastapi import (
-    FastAPI,
-    WebSocket,
-    UploadFile,
-    File,
-    Form,
-    Query,
-)
-from pydantic import BaseModel
+# from fastapi import FastAPI, UploadFile, File, Form
+# from fastapi.middleware.cors import CORSMiddleware
+# from pydantic import BaseModel
+# from dotenv import load_dotenv
+# import uuid
+# import os
+# from fastapi import FastAPI, UploadFile, File, Form, Body
 
-from app.prompts import INTERVIEW_ANSWER_PROMPT
-from app.llm_client import generate_answer
-from app.rag import chunk_text, build_index, retrieve_context
-from app.ws_answer import websocket_answer_handler
-from app.ws_audio import websocket_audio_handler
-from app.files import extract_text
-from app.session_store import (
-    create_session,
-    set_docs,
-    append_transcript,
-    clear_transcript,
-    get_session,
-)
+# from openai import OpenAI
+# from openai import OpenAI
 
+
+# # -------------------------------------------------
+# # Load env + OpenAI client
+# # -------------------------------------------------
+# load_dotenv()
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# # -------------------------------------------------
+# # Simple in-memory session store (MVP)
+# # -------------------------------------------------
+# SESSIONS = {}
+
+# def create_session():
+#     session_id = str(uuid.uuid4())
+#     SESSIONS[session_id] = {
+#         "resume": "",
+#         "jd": "",
+#         "transcript": "",
+#     }
+#     return session_id
+
+# def set_docs(session_id, resume, jd):
+#     SESSIONS[session_id]["resume"] = resume
+#     SESSIONS[session_id]["jd"] = jd
+
+# def clear_transcript(session_id):
+#     SESSIONS[session_id]["transcript"] = ""
+
+# def get_session(session_id):
+#     return SESSIONS.get(session_id, {})
+
+# # -------------------------------------------------
+# # FastAPI init
+# # -------------------------------------------------
+# app = FastAPI(title="InterviewFox API")
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
+# # -------------------------------------------------
+# # Health
+# # -------------------------------------------------
+# @app.get("/health")
+# def health():
+#     return {"status": "InterviewFox backend is running"}
+
+# # -------------------------------------------------
+# # Session APIs
+# # -------------------------------------------------
+# @app.post("/session/create")
+# def session_create():
+#     return {"session_id": create_session()}
+
+# @app.post("/session/upload")
+# async def session_upload(
+#     session_id: str = Form(...),
+#     resume_file: UploadFile | None = File(None),
+#     jd_file: UploadFile | None = File(None),
+# ):
+#     resume_text = ""
+#     jd_text = ""
+
+#     if resume_file:
+#         resume_text = (await resume_file.read()).decode(errors="ignore")
+
+#     if jd_file:
+#         jd_text = (await jd_file.read()).decode(errors="ignore")
+
+#     set_docs(session_id, resume_text, jd_text)
+
+#     return {
+#         "session_id": session_id,
+#         "resume_chars": len(resume_text),
+#         "jd_chars": len(jd_text),
+#     }
+
+# # -------------------------------------------------
+# # IC MODE (logic only)
+# # -------------------------------------------------
+# @app.post("/session/ic/start")
+# def ic_start(session_id: str):
+#     clear_transcript(session_id)
+#     return {"ic": "on"}
+
+# @app.post("/session/ic/stop")
+# def ic_stop(session_id: str):
+#     session = get_session(session_id)
+#     return {"question": session.get("transcript", "").strip()}
+
+# # -------------------------------------------------
+# # Generate API (OpenAI)
+# # -------------------------------------------------
+# class GenerateRequest(BaseModel):
+#     question: str
+
+# # @app.post("/generate")
+# # def generate(payload: GenerateRequest):
+# #     question = payload.question.strip()
+
+# #     if not question:
+# #         return {"answer": ""}
+
+# #     response = client.chat.completions.create(
+# #         model="gpt-4o-mini",
+# #         messages=[
+# #             {
+# #                 "role": "system",
+# #                 "content": "You are an interview assistant. Answer clearly and professionally."
+# #             },
+# #             {
+# #                 "role": "user",
+# #                 "content": question
+# #             }
+# #         ],
+# #         temperature=0.4,
+# #         max_tokens=250
+# #     )
+
+# #     return {
+# #         "answer": response.choices[0].message.content.strip()
+# #     }
+
+
+# @app.post("/generate")
+# def generate(data: dict = Body(...)):
+#     question = data.get("question", "").strip()
+#     if not question:
+#         return {"answer": ""}
+
+#     context = ""
+#     chunks = SESSIONS.get(data.get("session_id"), {}).get("chunks", [])
+#     if chunks:
+#         context = retrieve_context(question, chunks)
+
+#     system_prompt = f"""
+# You are a senior interview assistant.
+# Answer concisely, confidently, and in first person.
+# Use the candidate's resume and job description when relevant.
+# If context is missing, still answer professionally.
+# """
+
+#     user_prompt = f"""
+# Question:
+# {question}
+
+# Context (resume + JD excerpts):
+# {context}
+# """
+
+#     response = openai.ChatCompletion.create(
+#         model="gpt-4o-mini",
+#         messages=[
+#             {"role": "system", "content": system_prompt},
+#             {"role": "user", "content": user_prompt}
+#         ],
+#         temperature=0.3,
+#         max_tokens=180
+#     )
+
+#     return {"answer": response.choices[0].message.content.strip()}
+
+from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Body
+from dotenv import load_dotenv
+from openai import OpenAI
+import uuid
+import os
+
+# -------------------------------------------------
+# Load env + OpenAI client
+# -------------------------------------------------
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# -------------------------------------------------
+# In-memory session store (MVP)
+# -------------------------------------------------
+SESSIONS = {}
+
+def create_session():
+    session_id = str(uuid.uuid4())
+    SESSIONS[session_id] = {
+        "resume": "",
+        "jd": "",
+        "transcript": "",
+    }
+    return session_id
+
+def set_docs(session_id, resume, jd):
+    if session_id in SESSIONS:
+        SESSIONS[session_id]["resume"] = resume
+        SESSIONS[session_id]["jd"] = jd
+
+def clear_transcript(session_id):
+    if session_id in SESSIONS:
+        SESSIONS[session_id]["transcript"] = ""
+
+def get_session(session_id):
+    return SESSIONS.get(session_id, {})
+
+# -------------------------------------------------
+# FastAPI init
+# -------------------------------------------------
 app = FastAPI(title="InterviewFox API")
 
-# ------------------------------------------------------------------
-# Models
-# ------------------------------------------------------------------
-class QuestionRequest(BaseModel):
-    question: str
-    resume: str
-    job_description: str
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-
-# ------------------------------------------------------------------
+# -------------------------------------------------
 # Health
-# ------------------------------------------------------------------
+# -------------------------------------------------
 @app.get("/health")
 def health():
     return {"status": "InterviewFox backend is running"}
 
-
-# ------------------------------------------------------------------
-# Session Management
-# ------------------------------------------------------------------
+# -------------------------------------------------
+# Session APIs
+# -------------------------------------------------
 @app.post("/session/create")
 def session_create():
-    """
-    Creates a new interview session.
-    """
     return {"session_id": create_session()}
-
 
 @app.post("/session/upload")
 async def session_upload(
@@ -58,20 +246,14 @@ async def session_upload(
     resume_file: UploadFile | None = File(None),
     jd_file: UploadFile | None = File(None),
 ):
-    """
-    Upload resume and JD (PDF/DOCX/TXT).
-    Text is extracted and stored in session.
-    """
     resume_text = ""
     jd_text = ""
 
-    if resume_file is not None:
-        resume_bytes = await resume_file.read()
-        resume_text = extract_text(resume_file.filename, resume_bytes)
+    if resume_file:
+        resume_text = (await resume_file.read()).decode(errors="ignore")
 
-    if jd_file is not None:
-        jd_bytes = await jd_file.read()
-        jd_text = extract_text(jd_file.filename, jd_bytes)
+    if jd_file:
+        jd_text = (await jd_file.read()).decode(errors="ignore")
 
     set_docs(session_id, resume_text, jd_text)
 
@@ -81,88 +263,128 @@ async def session_upload(
         "jd_chars": len(jd_text),
     }
 
-
-# ------------------------------------------------------------------
-# IC MODE (Interview Capture)
-# ------------------------------------------------------------------
+# -------------------------------------------------
+# IC MODE (logic only)
+# -------------------------------------------------
 @app.post("/session/ic/start")
 def ic_start(session_id: str):
-    """
-    Clears transcript buffer and starts IC mode.
-    """
     clear_transcript(session_id)
-    return {"session_id": session_id, "ic": "on"}
-
-
-@app.post("/session/ic/append")
-def ic_append(session_id: str, text: str):
-    """
-    Appends partial STT text to the session transcript.
-    """
-    append_transcript(session_id, text)
-    return {"session_id": session_id, "ok": True}
-
+    return {"ic": "on"}
 
 @app.post("/session/ic/stop")
 def ic_stop(session_id: str):
-    """
-    Stops IC mode and returns the captured interviewer question.
-    """
     session = get_session(session_id)
-    question = (session.get("transcript") or "").strip()
-    return {"session_id": session_id, "question": question}
+    return {"question": session.get("transcript", "").strip()}
 
+# -------------------------------------------------
+# Generate Answer (OpenAI – WORKING)
+# -------------------------------------------------
+# @app.post("/generate")
+# def generate(data: dict = Body(...)):
+#     question = data.get("question", "").strip()
+#     session_id = data.get("session_id")
 
-# ------------------------------------------------------------------
-# REST Answer Endpoint (for manual testing / fallback)
-# ------------------------------------------------------------------
-@app.post("/answer")
-def generate_interview_answer(req: QuestionRequest):
-    combined_text = req.resume + "\n" + req.job_description
+#     if not question:
+#         return {"answer": ""}
 
-    chunks = chunk_text(combined_text)
-    index, stored_chunks = build_index(chunks)
-    context = retrieve_context(req.question, index, stored_chunks)
+#     resume = ""
+#     jd = ""
 
-    prompt = INTERVIEW_ANSWER_PROMPT.format(
-        question=req.question,
-        context=context,
+#     if session_id and session_id in SESSIONS:
+#         resume = SESSIONS[session_id].get("resume", "")
+#         jd = SESSIONS[session_id].get("jd", "")
+
+#     context = ""
+#     if resume or jd:
+#         context = f"""
+# Candidate Resume:
+# {resume[:2000]}
+
+# Job Description:
+# {jd[:2000]}
+# """
+
+#     system_prompt = (
+#         "You are a senior interview assistant. "
+#         "Answer in first person, confidently and concisely. "
+#         "Use resume and job description when relevant. "
+#         "Avoid fluff."
+#     )
+
+#     user_prompt = f"""
+# Interview Question:
+# {question}
+
+# Context:
+# {context}
+# """
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=[
+#             {"role": "system", "content": system_prompt},
+#             {"role": "user", "content": user_prompt},
+#         ],
+#         temperature=0.3,
+#         max_tokens=180,
+#     )
+
+#     return {
+#         "answer": response.choices[0].message.content.strip()
+#     }
+
+from pydantic import BaseModel
+from fastapi import Body
+
+class GenerateRequest(BaseModel):
+    question: str
+    session_id: str | None = None
+
+@app.post("/generate")
+def generate(payload: GenerateRequest):
+    question = payload.question.strip()
+    session_id = payload.session_id
+
+    resume = ""
+    jd = ""
+
+    if session_id and session_id in SESSIONS:
+        resume = SESSIONS[session_id].get("resume", "")
+        jd = SESSIONS[session_id].get("jd", "")
+
+    context = ""
+    if resume or jd:
+        context = f"""
+Candidate Resume:
+{resume[:2000]}
+
+Job Description:
+{jd[:2000]}
+"""
+
+    system_prompt = (
+        "You are a senior interview assistant. "
+        "Answer in first person, confidently and concisely. "
+        "Use resume and job description when relevant. "
+        "Avoid fluff."
     )
 
-    answer = generate_answer(prompt)
+    user_prompt = f"""
+Interview Question:
+{question}
 
-    return {
-        "answer": answer,
-        "context_used": context,
-    }
+Context:
+{context}
+"""
 
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=0.3,
+        max_tokens=180,
+    )
 
-# ------------------------------------------------------------------
-# WebSocket: Streaming Answers (Typing Effect)
-# ------------------------------------------------------------------
-@app.websocket("/ws/answer")
-async def websocket_answer(websocket: WebSocket):
-    """
-    Streams AI answers token-by-token.
-    Session-based resume & JD are used.
-    """
-    await websocket_answer_handler(websocket)
-
-
-# ------------------------------------------------------------------
-# WebSocket: Audio Input (IC Mode – Whisper, dormant)
-# ------------------------------------------------------------------
-@app.websocket("/ws/audio")
-async def websocket_audio(
-    websocket: WebSocket,
-    session_id: str = Query(...),
-):
-    """
-    Receives mic audio chunks and appends STT output
-    to the session transcript.
-
-    NOTE:
-    - Used only during local testing
-    - Safe to keep inactive
-    """
-    await websocket_audio_handler(websocket, session_id)
+    return {"answer": response.choices[0].message.content.strip()}

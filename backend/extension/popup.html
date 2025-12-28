@@ -5,74 +5,23 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        width: 320px;
+        width: 220px;
         padding: 10px;
-      }
-      h3 {
-        margin-top: 0;
       }
       button {
         width: 100%;
-        padding: 8px;
-        margin-top: 6px;
-        background: #ff6a00;
-        color: #fff;
-        border: none;
-        cursor: pointer;
+        padding: 10px;
+        font-size: 14px;
         font-weight: bold;
-      }
-      button.secondary {
-        background: #444;
-      }
-      input[type="file"] {
-        width: 100%;
-        margin-top: 4px;
-      }
-      #sessionInfo {
-        font-size: 12px;
-        margin-top: 6px;
-      }
-      #capturedQ,
-      #answer {
-        font-size: 13px;
-        white-space: pre-wrap;
-        margin-top: 6px;
-        border: 1px solid #ddd;
-        padding: 6px;
-        min-height: 40px;
-      }
-      hr {
-        margin: 10px 0;
+        cursor: pointer;
       }
     </style>
   </head>
 
   <body>
-    <h3>InterviewFox 🦊</h3>
+    <button id="openApp">Open InterviewFox</button>
 
-    <!-- Resume Upload -->
-    <label><b>Resume (PDF / DOCX)</b></label>
-    <input id="resumeFile" type="file" accept=".pdf,.docx" />
-
-    <!-- JD Upload -->
-    <label><b>Job Description (PDF / DOCX / TXT)</b></label>
-    <input id="jdFile" type="file" accept=".pdf,.docx,.txt" />
-
-    <button id="createSessionBtn">Create Session & Upload</button>
-
-    <div id="sessionInfo"></div>
-
-    <hr />
-
-    <!-- IC Mode -->
-    <button id="icBtn" class="secondary">IC OFF (Muted)</button>
-
-    <b>Captured Question</b>
-    <div id="capturedQ"></div>
-
-    <b>Live Answer</b>
-    <div id="answer"></div>
-
+    <!-- IMPORTANT -->
     <script src="popup.js"></script>
   </body>
 </html>

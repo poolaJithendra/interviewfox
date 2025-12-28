@@ -8,4 +8,9 @@ numpy
 python-multipart
 pypdf
 python-docx
+<<<<<<< HEAD
 Whisper
+=======
+dotenv 
+faster_whisper
+>>>>>>> ee07257 (Sync all InterviewFox code)

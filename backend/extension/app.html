@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>InterviewFox</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+
+      button {
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      textarea {
+        width: 100%;
+        height: 120px;
+        margin-top: 6px;
+      }
+
+      h3 {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+<!-- Resume Upload -->
+<label><b>Resume (PDF / DOCX / TXT)</b></label>
+<input type="file" id="resumeFile" />
+
+<!-- JD Upload -->
+<label><b>Job Description (PDF / DOCX / TXT)</b></label>
+<input type="file" id="jdFile" />
+
+<button id="uploadBtn">Upload Resume & JD</button>
+
+<hr />
+
+  <body>
+    <h2>InterviewFox</h2>
+
+    <!-- MIC CONTROLS -->
+    <button id="startMic">Start Mic</button>
+    <button id="stopMic" disabled>Stop</button>
+
+    <!-- OUTPUT -->
+    <h3>Captured Question</h3>
+    <textarea id="capturedQ" readonly></textarea>
+
+    <h3>Live Answer</h3>
+    <textarea id="answer" readonly></textarea>
+
+    <script src="app.js"></script>
+  </body>
+</html>

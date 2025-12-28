@@ -1,149 +1,214 @@
-const API_BASE = "http://localhost:8000";
-const WS_URL = "ws://localhost:8000/ws/answer";
+// // // ===============================
+// // // InterviewFox – Popup Logic
+// // // ===============================
 
-let sessionId = null;
-let icOn = false;
+// // const API = "http://127.0.0.1:8000";
 
-const sessionInfo = document.getElementById("sessionInfo");
-const capturedQ = document.getElementById("capturedQ");
-const answerDiv = document.getElementById("answer");
-const icBtn = document.getElementById("icBtn");
+// // const resumeInput = document.getElementById("resumeFile");
+// // const jdInput = document.getElementById("jdFile");
+// // const createBtn = document.getElementById("createSessionBtn");
+// // const icBtn = document.getElementById("icBtn");
 
-/* -------------------------
-   Session Creation & Upload
--------------------------- */
-async function createSessionAndUpload() {
-  sessionInfo.innerText = "Creating session...";
-  capturedQ.innerText = "";
-  answerDiv.innerText = "";
+// // const sessionInfo = document.getElementById("sessionInfo");
+// // const capturedQ = document.getElementById("capturedQ");
+// // const answerDiv = document.getElementById("answer");
 
-  // Create session
-  const res = await fetch(`${API_BASE}/session/create`, { method: "POST" });
-  const data = await res.json();
-  sessionId = data.session_id;
+// // let sessionId = null;
 
-  // Prepare uploads
-  const resumeFile = document.getElementById("resumeFile").files[0];
-  const jdFile = document.getElementById("jdFile").files[0];
+// // // -------------------------------
+// // // Create session + upload files
+// // // -------------------------------
+// // createBtn.onclick = async () => {
+// //   sessionInfo.innerText = "Creating session...";
+// //   capturedQ.innerText = "";
+// //   answerDiv.innerText = "";
 
-  const form = new FormData();
-  form.append("session_id", sessionId);
-  if (resumeFile) form.append("resume_file", resumeFile);
-  if (jdFile) form.append("jd_file", jdFile);
+// //   const sessionRes = await fetch(`${API}/session/create`, {
+// //     method: "POST",
+// //   });
+// //   const sessionData = await sessionRes.json();
+// //   sessionId = sessionData.session_id;
 
-  // Upload docs
-  const uploadRes = await fetch(`${API_BASE}/session/upload`, {
-    method: "POST",
-    body: form,
+// //   const formData = new FormData();
+// //   formData.append("session_id", sessionId);
+
+// //   if (resumeInput.files[0]) {
+// //     formData.append("resume_file", resumeInput.files[0]);
+// //   }
+// //   if (jdInput.files[0]) {
+// //     formData.append("jd_file", jdInput.files[0]);
+// //   }
+
+// //   const uploadRes = await fetch(`${API}/session/upload`, {
+// //     method: "POST",
+// //     body: formData,
+// //   });
+// //   const uploadData = await uploadRes.json();
+
+// //   sessionInfo.innerText =
+// //     "Session created\n" +
+// //     `Resume chars: ${uploadData.resume_chars}\n` +
+// //     `JD chars: ${uploadData.jd_chars}`;
+// // };
+
+// // // -------------------------------
+// // // IC Mode toggle
+// // // -------------------------------
+// // icBtn.onclick = () => {
+// //   if (!sessionId) {
+// //     alert("Create session first");
+// //     return;
+// //   }
+
+// //   icBtn.innerText = "IC ON (Listening)";
+// //   icBtn.disabled = true;
+
+// //   window.open(
+// //     `ic.html?session_id=${sessionId}`,
+// //     "_blank",
+// //     "width=600,height=400"
+// //   );
+
+// //   // poll for answer after IC closes
+// //   setTimeout(() => {
+// //     fetchAnswer();
+// //     icBtn.innerText = "IC OFF (Muted)";
+// //     icBtn.disabled = false;
+// //   }, 4000);
+// // };
+
+// // // -------------------------------
+// // // Fetch auto-generated answer
+// // // -------------------------------
+// // async function fetchAnswer() {
+// //   const res = await fetch(
+// //     `${API}/session/ic/answer?session_id=${sessionId}`,
+// //     { method: "POST" }
+// //   );
+
+// //   const data = await res.json();
+
+// //   if (data.question) {
+// //     capturedQ.innerText = data.question;
+// //   }
+
+// //   if (data.answer) {
+// //     answerDiv.innerText = data.answer;
+// //   }
+// // }
+
+
+// // ===============================
+// // InterviewFox – Popup Logic
+// // ===============================
+
+// const API = "http://127.0.0.1:8000";
+
+// const resumeInput = document.getElementById("resumeFile");
+// const jdInput = document.getElementById("jdFile");
+// const createBtn = document.getElementById("createSessionBtn");
+// const icBtn = document.getElementById("icBtn");
+
+// const sessionInfo = document.getElementById("sessionInfo");
+// const capturedQ = document.getElementById("capturedQ");
+// const answerDiv = document.getElementById("answer");
+
+// let sessionId = null;
+// let answerPoller = null;
+
+// // -------------------------------
+// // Create session + upload files
+// // -------------------------------
+// createBtn.onclick = async () => {
+//   sessionInfo.innerText = "Creating session...";
+//   capturedQ.innerText = "";
+//   answerDiv.innerText = "";
+
+//   const sessionRes = await fetch(`${API}/session/create`, {
+//     method: "POST",
+//   });
+//   const sessionData = await sessionRes.json();
+//   sessionId = sessionData.session_id;
+
+//   const formData = new FormData();
+//   formData.append("session_id", sessionId);
+
+//   if (resumeInput.files[0]) {
+//     formData.append("resume_file", resumeInput.files[0]);
+//   }
+//   if (jdInput.files[0]) {
+//     formData.append("jd_file", jdInput.files[0]);
+//   }
+
+//   const uploadRes = await fetch(`${API}/session/upload`, {
+//     method: "POST",
+//     body: formData,
+//   });
+//   const uploadData = await uploadRes.json();
+
+//   sessionInfo.innerText =
+//     "Session created\n" +
+//     `Resume chars: ${uploadData.resume_chars}\n` +
+//     `JD chars: ${uploadData.jd_chars}`;
+// };
+
+// // -------------------------------
+// // IC Mode toggle (UNCHANGED FLOW)
+// // -------------------------------
+// icBtn.onclick = () => {
+//   if (!sessionId) {
+//     alert("Create session first");
+//     return;
+//   }
+
+//   icBtn.innerText = "IC ON (Listening)";
+//   icBtn.disabled = true;
+
+//   // Open IC tab (mic lives here)
+//   window.open(
+//     `ic.html?session_id=${sessionId}`,
+//     "_blank",
+//     "width=600,height=400"
+//   );
+
+//   // Start polling for answer (robust)
+//   startAnswerPolling();
+// };
+
+// // -------------------------------
+// // Robust polling for answer
+// // -------------------------------
+// function startAnswerPolling() {
+//   if (answerPoller) clearInterval(answerPoller);
+
+//   answerPoller = setInterval(async () => {
+//     const res = await fetch(
+//       `${API}/session/ic/answer?session_id=${sessionId}`,
+//       { method: "POST" }
+//     );
+
+//     const data = await res.json();
+
+//     if (data.question) {
+//       capturedQ.innerText = data.question;
+//     }
+
+//     if (data.answer) {
+//       answerDiv.innerText = data.answer;
+
+//       // Stop polling once answer is ready
+//       clearInterval(answerPoller);
+//       answerPoller = null;
+
+//       icBtn.innerText = "IC OFF (Muted)";
+//       icBtn.disabled = false;
+//     }
+//   }, 1000); // poll every 1 second
+// }
+
+
+document.getElementById("openApp").addEventListener("click", () => {
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("app.html")
   });
-  const uploadData = await uploadRes.json();
-
-  sessionInfo.innerText =
-    `Session: ${uploadData.session_id}\n` +
-    `Resume chars: ${uploadData.resume_chars}, JD chars: ${uploadData.jd_chars}`;
-}
-
-/* -------------------------
-   IC MODE HANDLERS
--------------------------- */
-async function icStart() {
-  await fetch(`${API_BASE}/session/ic/start?session_id=${sessionId}`, {
-    method: "POST",
-  });
-
-  capturedQ.innerText = "";
-  answerDiv.innerText = "IC ON… listening for interviewer question.";
-}
-
-async function icStopAndAnswer() {
-  answerDiv.innerText = "Processing question…";
-
-  const res = await fetch(
-    `${API_BASE}/session/ic/stop?session_id=${sessionId}`,
-    { method: "POST" }
-  );
-  const data = await res.json();
-
-  const question = (data.question || "").trim();
-  capturedQ.innerText = question || "(No speech captured)";
-
-  if (!question) {
-    answerDiv.innerText = "No question detected. Try IC ON again.";
-    return;
-  }
-
-  // Open WebSocket for streaming answer
-  let buffer = "";
-  const socket = new WebSocket(WS_URL);
-
-  socket.onopen = () => {
-    socket.send(
-      JSON.stringify({
-        session_id: sessionId,
-        question: question,
-      })
-    );
-  };
-
-  socket.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
-
-    if (msg.type === "start") {
-      answerDiv.innerText = "Answer:\n\n";
-      return;
-    }
-
-    if (msg.type === "delta") {
-      buffer += msg.content;
-      answerDiv.innerText = "Answer:\n\n" + buffer;
-      return;
-    }
-
-    if (msg.type === "done") {
-      // final answer already rendered
-      return;
-    }
-
-    if (msg.type === "error") {
-      answerDiv.innerText = "Error: " + msg.message;
-    }
-  };
-
-  socket.onerror = () => {
-    answerDiv.innerText = "WebSocket connection error.";
-  };
-}
-
-/* -------------------------
-   Button Event Bindings
--------------------------- */
-document
-  .getElementById("createSessionBtn")
-  .addEventListener("click", async () => {
-    try {
-      await createSessionAndUpload();
-    } catch (e) {
-      sessionInfo.innerText = "Error: " + e.message;
-    }
-  });
-
-icBtn.addEventListener("click", async () => {
-  if (!sessionId) {
-    answerDiv.innerText = "Please create session first.";
-    return;
-  }
-
-  try {
-    if (!icOn) {
-      icOn = true;
-      icBtn.innerText = "IC ON (Listening)";
-      await icStart();
-    } else {
-      icOn = false;
-      icBtn.innerText = "IC OFF (Muted)";
-      await icStopAndAnswer();
-    }
-  } catch (e) {
-    answerDiv.innerText = "Error: " + e.message;
-  }
 });

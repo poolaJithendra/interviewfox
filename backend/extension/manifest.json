@@ -3,8 +3,16 @@
   "name": "InterviewFox",
   "version": "0.1.0",
   "description": "Real-time AI interview assistant",
+
   "action": {
     "default_popup": "popup.html"
   },
-  "permissions": ["storage", "activeTab"]
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "http://127.0.0.1:8000/*"
+  ]
 }
